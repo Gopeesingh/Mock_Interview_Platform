@@ -1,6 +1,8 @@
-import InterviewCard from '@/components/InterviewCard';
-import { Button } from '@/components/ui/button';
-import { dummyInterviews } from '@/constants';
+
+
+import InterviewCard from '@/src/components/InterviewCard';
+import { Button } from '@/src/components/ui/button';
+import { dummyInterviews } from '@/src/constants';
 import Link from 'next/link';
 import React from 'react';
 

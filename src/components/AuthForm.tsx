@@ -4,19 +4,17 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-import { Button } from "@/components/ui/button";
-import {
-    Form,
-} from "@/components/ui/form";
-
 import Image from "next/image";
 import Link from "next/link";
 import { toast } from "sonner";
 import FormField from "./FormField";
 import { useRouter } from "next/navigation";
-import { signIn, signUp } from "@/lib/actions/auth.action";
+
 import {createUserWithEmailAndPassword, signInWithEmailAndPassword} from "firebase/auth"
 import { auth } from "../../firebase/client";
+import { signIn, signUp } from "../lib/actions/auth.action";
+import { Form } from "./ui/form";
+import { Button } from "./ui/button";
 
 
 const authFormSchema = (type : FormType) => {
@@ -44,10 +42,10 @@ const AuthForm = ({ type }: {type: FormType}) => {
     try {
         if(type === 'sign-up'){
             const {name, email, password} = values;
-            const userCredentials = await createUserWithEmailAndPassword(auth, email, password);
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
 
             const result = await signUp({
-                uid: userCredentials.user.uid,
+                uid: userCredential.user.uid,
                 name: name!,
                 email,
                 password,
@@ -60,11 +58,11 @@ const AuthForm = ({ type }: {type: FormType}) => {
 
 
             toast.success('Account created successfully Please sign in.');
-            router.push('/sign-in');
+            router.push("/sign-in");
         }else{
             const {email, password} = values;
-            const userCredentials = await signInWithEmailAndPassword(auth, email, password);
-            const idToken = await userCredentials.user.getIdToken();
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            const idToken = await userCredential.user.getIdToken();
             if(!idToken){
                 toast.error('Sign in failed. Please try again.')
                 return;
@@ -81,7 +79,7 @@ const AuthForm = ({ type }: {type: FormType}) => {
         toast.error(`There was an error: ${error}`)
     }
     }
-const isSignIn = type === 'sign-in'
+    const isSignIn = type === "sign-in";
 
     return (
     <div className="card-border lg:min-w-[566px]">
@@ -106,6 +104,7 @@ const isSignIn = type === 'sign-in'
                 name="name"
                 label="Name"
                 placeholder="Your Name"
+                type="text"
                 />
             )}
             <FormField
@@ -122,12 +121,12 @@ const isSignIn = type === 'sign-in'
                 placeholder="Enter Your Password"
                 type="password"
                 />
-            <Button className="btn" type="submit">{isSignIn ? 'Sign in' : 'create an account'}</Button>
+            <Button className="btn" type="submit">{isSignIn ? "Sign In" : 'create an account'}</Button>
             </form>
         </Form>
 
         <p className="text-center">{isSignIn ? 'No account yet?' : 'have an account already?'}
-        <Link href={!isSignIn ? '/sign-in' : 'sign-up'} className="font-bold text-user-primary ml-1">
+        <Link href={!isSignIn ? "/sign-in" : "sign-up"} className="font-bold text-user-primary ml-1">
         {!isSignIn ? "Sign in" : "Sign up"}
         </Link>
         </p>
