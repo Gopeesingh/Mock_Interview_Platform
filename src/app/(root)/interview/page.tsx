@@ -1,8 +1,12 @@
-import React from "react"
+import Agent from "@/src/components/agent"
 
 const Page = () => {
     return(
-        <div>Page</div>
+        <>
+        <h3>InterView Generation</h3>
+
+        <Agent userName="you" userId="user1" type="generate"/>
+        </>
     )
 }
 export default Page

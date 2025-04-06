@@ -40,7 +40,7 @@ export async function signUp(params : SignUpParams){
 
 export async function signIn(params : SignInParams){
     const {email, idToken} = params;
-    console.log("idToken",idToken)
+    
     try {
         const userRecord = await auth.getUserByEmail(email);
         if(!userRecord)
@@ -49,6 +49,7 @@ export async function signIn(params : SignInParams){
                 message : "User does not exits. create an account instead.",
             }
             await setSessionCookies(idToken);
+            
         }catch (e) {
         console.log(e);
 
