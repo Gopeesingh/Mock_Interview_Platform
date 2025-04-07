@@ -78,15 +78,20 @@ export async function setSessionCookies(idToken: string){
     })
 }
 
+
+
 export async function getCurrentUser(): Promise<User | null> {
   
     const cookiesStore = await cookies();
 
     const sessionCookies = cookiesStore.get('session')?.value;
+    
+    console.log("Found session cookie:", sessionCookies); // Add this line
     if(!sessionCookies) return null;
 
     try {
         const decodedClaims = await auth.verifySessionCookie(sessionCookies, true);
+        console.log("Decoded claims:", decodedClaims); // Add this line
         const userRecord = await db.
         collection('users')
         .doc(decodedClaims.uid)
