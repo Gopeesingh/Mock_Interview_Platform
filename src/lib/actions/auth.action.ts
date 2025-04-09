@@ -61,7 +61,7 @@ export async function signIn(params : SignInParams){
 }
 
 export async function setSessionCookies(idToken: string){
-  console.log("idToken", idToken)
+
     const cookiesStore = await cookies();
 
     const sessionCookies = await auth.createSessionCookie(idToken, {
@@ -86,12 +86,11 @@ export async function getCurrentUser(): Promise<User | null> {
 
     const sessionCookies = cookiesStore.get('session')?.value;
     
-    console.log("Found session cookie:", sessionCookies); // Add this line
     if(!sessionCookies) return null;
 
     try {
         const decodedClaims = await auth.verifySessionCookie(sessionCookies, true);
-        console.log("Decoded claims:", decodedClaims); // Add this line
+
         const userRecord = await db.
         collection('users')
         .doc(decodedClaims.uid)
@@ -115,32 +114,4 @@ export async function isAuthenticated(){
     return !!user;
 }
 
-export async function getInteviewsByUserId(userId : string): Promise<Interview[] | null>{
-    const interviews = await db
-    .collection('interviews')
-    .where('userId', '==', userId)
-    .orderBy('createdAt', 'desc')
-    .get();
-    
-    return interviews.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data()
-    })) as Interview[];
-}
 
-export async function getLatestInterviews(params : GetLatestInterviewsParams): Promise<Interview[] | null>{
-    const {userId, limit = 20 } = params;
-
-    const interviews = await db
-    .collection('interviews')
-    .orderBy('createdAt', 'desc')
-    .where('finalized', '==', true)
-    .where('userId', '!=', userId)
-    .limit(limit)
-    .get();
-    
-    return interviews.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data()
-    })) as Interview[];
-}

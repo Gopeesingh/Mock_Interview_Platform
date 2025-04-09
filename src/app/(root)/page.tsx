@@ -2,8 +2,8 @@
 
 import InterviewCard from '@/src/components/InterviewCard';
 import { Button } from '@/src/components/ui/button';
-import { dummyInterviews } from '@/src/constants';
-import { getCurrentUser, getInteviewsByUserId, getLatestInterviews } from '@/src/lib/actions/auth.action';
+import { getCurrentUser } from '@/src/lib/actions/auth.action';
+import { getInteviewsByUserId, getLatestInterviews} from '@/src/lib/actions/general.action'
 import Link from 'next/link';
 import React from 'react';
 
@@ -51,7 +51,8 @@ const Page = async () => {
             {
                     hasUpcomingInterViews ? (
                         latestInterviews?.map((interview) => (
-                            <InterviewCard {...interview} key={interview.id}/>
+                            <InterviewCard {...interview}
+                            key={interview.id}/>
                         ))) : (
                             <p>There are no new interview available</p>
                     )}
@@ -61,3 +62,4 @@ const Page = async () => {
     )
 }
 export default Page;
+
