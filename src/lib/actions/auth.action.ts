@@ -78,6 +78,17 @@ export async function setSessionCookies(idToken: string){
     })
 }
 
+// Sign out user by clearing the session cookie
+export async function signOut() {
+    const cookieStore = await cookies();
+
+    cookieStore.delete("session");
+    return {
+        success: true,
+        message: 'Successfully signed out.'
+    };
+}
+
 
 
 export async function getCurrentUser(): Promise<User | null> {

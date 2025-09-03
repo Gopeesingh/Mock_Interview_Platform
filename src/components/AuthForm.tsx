@@ -12,7 +12,7 @@ import { useRouter } from "next/navigation";
 
 import {createUserWithEmailAndPassword, signInWithEmailAndPassword} from "firebase/auth"
 import { auth } from "../../firebase/client";
-import { signIn, signUp } from "../lib/actions/auth.action";
+import { signIn, signUp} from "../lib/actions/auth.action";
 import { Form } from "./ui/form";
 import { Button } from "./ui/button";
 
@@ -59,7 +59,14 @@ const AuthForm = ({ type }: {type: FormType}) => {
 
             toast.success('Account created successfully Please sign in.');
             router.push("/sign-in");
-        }else{
+        }
+        // else if(type === 'sign-out'){
+        //     await signOut();
+        //     toast.success('Signed out successfully.');
+        //     router.push('/sign-in');
+
+        // }
+        else{
             const {email, password} = values;
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
             const idToken = await userCredential.user.getIdToken();
@@ -74,6 +81,7 @@ const AuthForm = ({ type }: {type: FormType}) => {
             router.push('/');
             
         }
+
     } catch (error) {
         console.log(error)
         toast.error(`There was an error: ${error}`)
