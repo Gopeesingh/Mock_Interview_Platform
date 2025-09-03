@@ -1,3 +1,4 @@
+"use client";
 import { toast } from "sonner";
 import FormField from "./FormField";
 import { useRouter } from "next/navigation";
