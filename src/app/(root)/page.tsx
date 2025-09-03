@@ -1,7 +1,6 @@
 
 
 import InterviewCard from '@/src/components/InterviewCard';
-import SignOutButton from '@/src/components/SignOutButton';
 
 import { Button } from '@/src/components/ui/button';
 import { getCurrentUser } from '@/src/lib/actions/auth.action';
@@ -22,11 +21,6 @@ const Page = async () => {
     const hasUpcomingInterViews = latestInterviews?.length > 0
     return(
         <>
-        
-        <div className="w-full shadow-md px-6 py-4 flex justify-end items-center">
-        <SignOutButton />
-    </div>
-
         <section className='card-cta'>
         <div className='flex flex-col gap-6 max-w-lg'>
             <h2>Get Interview-Ready with AI-Powered Practice & Feedback</h2>
