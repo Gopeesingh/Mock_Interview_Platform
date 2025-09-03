@@ -5,12 +5,12 @@ import { feedbackSchema } from "@/src/constants";
 import { google } from "@ai-sdk/google";
 import { generateObject } from "ai";
 
-export async function getInteviewsByUserId(userId : string): Promise<Interview[] | null>{
+export async function getInteviewsByUserId(userId: string): Promise<Interview[] | null> {
     const interviews = await db
-    .collection('interviews')
-    .where('userId', '==', userId)
-    .orderBy('createdAt', 'desc')
-    .get();
+        .collection('interviews')
+        .where('userId', '==', userId)
+        .orderBy('createdAt', 'desc')
+        .get();
     
     return interviews.docs.map((doc) => ({
         id: doc.id,
@@ -18,16 +18,16 @@ export async function getInteviewsByUserId(userId : string): Promise<Interview[]
     })) as Interview[];
 }
 
-export async function getLatestInterviews(params : GetLatestInterviewsParams): Promise<Interview[] | null>{
-    const {userId, limit = 20 } = params;
+export async function getLatestInterviews(params: GetLatestInterviewsParams): Promise<Interview[] | null> {
+    const { userId, limit = 20 } = params;
 
     const interviews = await db
-    .collection('interviews')
-    .orderBy('createdAt', 'desc')
-    .where('finalized', '==', true)
-    .where('userId', '!=', userId)
-    .limit(limit)
-    .get();
+        .collection('interviews')
+        .orderBy('createdAt', 'desc')
+        .where('finalized', '==', true)
+        .where('userId', '!=', userId)
+        .limit(limit)
+        .get();
     
     return interviews.docs.map((doc) => ({
         id: doc.id,
@@ -35,24 +35,38 @@ export async function getLatestInterviews(params : GetLatestInterviewsParams): P
     })) as Interview[];
 }
 
-export async function getInterviewById(id : string): Promise<Interview[] | null>{
-    const interview = await db
-    .collection('interviews')
-    .doc(id)
-    .get();
-    return interview.data() as Interview | null; 
+// Fixed: Changed return type from Interview[] to Interview
+export async function getInterviewById(id: string): Promise<Interview | null> {
+    try {
+        const interview = await db
+            .collection('interviews')
+            .doc(id)
+            .get();
+        
+        if (!interview.exists) {
+            return null;
+        }
+        
+        return {
+            id: interview.id,
+            ...interview.data()
+        } as Interview;
+    } catch (error) {
+        console.error('Error getting interview by id:', error);
+        return null;
+    }
 }
 
-export async function createFeedback(params : CreateFeedbackParams){
-    const {interviewId, userId, transcript} = params;
+export async function createFeedback(params: CreateFeedbackParams) {
+    const { interviewId, userId, transcript } = params;
 
     try {
-        const formattedTranscript = transcript.map((sentence: { role: string;  content: string;}) => (
+        const formattedTranscript = transcript.map((sentence: { role: string; content: string; }) => (
             `- ${sentence.role}: ${sentence.content}\n`
         )).join('');
 
-        const {object: {totalScore, categoryScores, strengths, areasForImprovement, finalAssessment}} = await generateObject({
-            model: google('gemini-2.0-flash-001',{
+        const { object: { totalScore, categoryScores, strengths, areasForImprovement, finalAssessment } } = await generateObject({
+            model: google('gemini-2.0-flash-001', {
                 structuredOutputs: false,
             }),
             schema: feedbackSchema,
@@ -68,8 +82,7 @@ export async function createFeedback(params : CreateFeedbackParams){
             - **Cultural & Role Fit**: Alignment with company values and job role.
             - **Confidence & Clarity**: Confidence in responses, engagement, and clarity.
             `,
-            system:
-            "You are a professional interviewer analyzing a mock interview. Your task is to evaluate the candidate based on structured categories",
+            system: "You are a professional interviewer analyzing a mock interview. Your task is to evaluate the candidate based on structured categories",
         });
             
         const feedback = await db.collection('feedback').add({
@@ -88,29 +101,95 @@ export async function createFeedback(params : CreateFeedbackParams){
             feedbackId: feedback.id,
         }
 
-        } catch (e) {
+    } catch (e) {
         console.log('Error saving feedback', e);
-
-        return { success : false};
+        return { success: false };
     }
 }
 
-export async function getFeedbackByInterviewId(params : GetFeedbackByInterviewIdParams): Promise<Feedback | null>{
-    const {interviewId, userId} = params;
+export async function getFeedbackByInterviewId(params: GetFeedbackByInterviewIdParams): Promise<Feedback | null> {
+    const { interviewId, userId } = params;
 
-    const feedback = await db
-    .collection('feedback')
-    .where('interviewId', '==', interviewId)
-    .where('userId', '==', userId)
-    .limit(1)
-    .get();
+    try {
+        const feedback = await db
+            .collection('feedback')
+            .where('interviewId', '==', interviewId)
+            .where('userId', '==', userId)
+            .limit(1)
+            .get();
 
-    if(feedback.empty) return null;
+        if (feedback.empty) return null;
 
-    const feedbackDocs = feedback.docs[0];
+        const feedbackDocs = feedback.docs[0];
 
-    return {
-        id: feedbackDocs.id,
-        ...feedbackDocs.data()
-    } as Feedback;
+        return {
+            id: feedbackDocs.id,
+            ...feedbackDocs.data()
+        } as Feedback;
+    } catch (error) {
+        console.error('Error getting feedback by interview id:', error);
+        return null;
     }
+}
+
+export async function createTestInterview(userId: string) {
+    try {
+        const testInterview = await db.collection('interviews').add({
+            userId: userId,
+            role: 'Test Developer',
+            type: 'Technical',
+            level: 'Junior',
+            techstack: ['JavaScript'],
+            createdAt: new Date().toISOString(),
+            finalized: true
+        });
+        
+        console.log('Test interview created with ID:', testInterview.id);
+        return { success: true, id: testInterview.id };
+    } catch (error) {
+        console.error('Error creating test interview:', error);
+        return { success: false, error };
+    }
+}
+
+export async function debugUserIds(): Promise<any[]> {
+    const interviews = await db
+        .collection('interviews')
+        .limit(10)
+        .get();
+    
+    return interviews.docs.map((doc) => ({
+        id: doc.id,
+        userId: doc.data().userId,
+        role: doc.data().role,
+        createdAt: doc.data().createdAt
+    }));
+}
+
+// Then add this to your dashboard page temporarily:
+
+const debugData = await debugUserIds();
+console.log('Debug - Interview UserIds:', debugData);
+
+export async function fixPlaceholderUserIds(targetUserId: string) {
+    try {
+        const interviews = await db
+            .collection('interviews')
+            .where('userId', '==', '{{ userid }}')
+            .get();
+
+        const batch = db.batch();
+        
+        interviews.docs.forEach((doc) => {
+            batch.update(doc.ref, { userId: targetUserId });
+        });
+
+        await batch.commit();
+        
+        console.log(`Fixed ${interviews.docs.length} interviews with placeholder userId`);
+        return { success: true, count: interviews.docs.length };
+    } catch (error) {
+        console.error('Error fixing placeholder userIds:', error);
+        return { success: false, error };
+    }
+}

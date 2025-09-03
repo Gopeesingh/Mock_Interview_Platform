@@ -43,14 +43,22 @@ export async function signIn(params : SignInParams){
     
     try {
         const userRecord = await auth.getUserByEmail(email);
-        if(!userRecord)
+        if(!userRecord) {
             return {
                 success : false,
                 message : "User does not exits. create an account instead.",
             }
-            await setSessionCookies(idToken);
-            
-        }catch (e) {
+        }
+        
+        await setSessionCookies(idToken);
+        
+        // ✅ FIXED: Added missing return statement
+        return {
+            success: true,
+            message: "Successfully logged in."
+        }
+        
+    } catch (e) {
         console.log(e);
 
         return {
@@ -67,7 +75,6 @@ export async function setSessionCookies(idToken: string){
     const sessionCookies = await auth.createSessionCookie(idToken, {
         expiresIn: ONE_WEEK * 1000,
     })
-
 
     cookiesStore.set('session', sessionCookies, {
         maxAge: ONE_WEEK,
@@ -88,8 +95,6 @@ export async function signOut() {
         message: 'Successfully signed out.'
     };
 }
-
-
 
 export async function getCurrentUser(): Promise<User | null> {
   
@@ -119,10 +124,10 @@ export async function getCurrentUser(): Promise<User | null> {
         return null;
     }
 }
+
 // check if user is authenticated
 export async function isAuthenticated(){
     const user = await getCurrentUser();
     return !!user;
 }
-
 
